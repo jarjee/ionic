@@ -137,8 +137,8 @@
     }
 
     if (this._isDragging) {
-      leftWidth = this._currentDrag.buttonsLeft.width;
-      rightWidth = this._currentDrag.buttonsRight.width;
+      leftWidth = (this._currentDrag.buttonsLeft.el.classList.contains('invisible')) ? 0 : this._currentDrag.buttonsLeft.width;
+      rightWidth = (this._currentDrag.buttonsRight.el.classList.contains('invisible')) ? 0 : this._currentDrag.buttonsRight.width;
 
       // Grab the new X point, capping it at zero if applicable
       var newX = this._currentDrag.startOffsetX + e.gesture.deltaX;
