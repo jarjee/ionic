@@ -13,12 +13,15 @@
   var RUBBER_COEFFICIENT = 0.4;
   var VELOCITY_TRESHOLD = 0.3;
 
-  function grabButtons(content, cls) {
+  function grabButtons(content, cls, e) {
     var buttons = content.parentNode.querySelector('.' + cls);
     if(!buttons) {
       return {width: 0};
     }
-    buttons.classList.remove('invisible');
+
+    if ((cls === ITEM_OPTIONS_LEFT_CLASS && e.gesture.direction === 'right') || (cls === ITEM_OPTIONS_RIGHT_CLASS && e.gesture.direction === 'left')) {
+      buttons.classList.remove('invisible');
+    }
 
     return {el: buttons, width: buttons.offsetWidth};
   }
@@ -69,8 +72,8 @@
     offsetX = parseFloat(content.style[ionic.CSS.TRANSFORM].replace('translate3d(', '').split(',')[0]) || 0;
 
     // Grab the buttons
-    buttonsLeft = grabButtons(content, ITEM_OPTIONS_LEFT_CLASS);
-    buttonsRight = grabButtons(content, ITEM_OPTIONS_RIGHT_CLASS);
+    buttonsLeft = grabButtons(content, ITEM_OPTIONS_LEFT_CLASS, e);
+    buttonsRight = grabButtons(content, ITEM_OPTIONS_RIGHT_CLASS, e);
     if (!buttonsLeft.el && !buttonsRight.el) {
       return;
     }
