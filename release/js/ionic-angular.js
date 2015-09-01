@@ -888,7 +888,7 @@ function($rootScope, $state, $location, $window, $timeout, $ionicViewSwitcher, $
         // create an element from the viewLocals template
         ele = $ionicViewSwitcher.createViewEle(viewLocals);
         if (this.isAbstractEle(ele, viewLocals)) {
-          void 0;
+          console.log('VIEW', 'abstractView', DIRECTION_NONE, viewHistory.currentView);
           return {
             action: 'abstractView',
             direction: DIRECTION_NONE,
@@ -1009,7 +1009,7 @@ function($rootScope, $state, $location, $window, $timeout, $ionicViewSwitcher, $
         }
       }
 
-      void 0;
+      console.log('VIEW', action, direction, viewHistory.currentView);
 
       hist.cursor = viewHistory.currentView.index;
 
@@ -4979,7 +4979,7 @@ function($provide) {
     //found nearest to body's scrollTop is set to scroll to an element
     //with that ID.
     $location.hash = function(value) {
-      if (isDefined(value)) {
+      if (isDefined(value) && value.length > 0) {
         $timeout(function() {
           var scroll = document.querySelector('.scroll-content');
           if (scroll) {
@@ -9424,7 +9424,7 @@ function RepeatManagerFactory($rootScope, $window, $$rAF) {
  * @param {string=} direction Which way to scroll. 'x' or 'y' or 'xy'. Default 'y'.
  * @param {boolean=} locking Whether to lock scrolling in one direction at a time. Useful to set to false when zoomed in or scrolling in two directions. Default true.
  * @param {boolean=} padding Whether to add padding to the content.
- * of the content.  Defaults to true on iOS, false on Android.
+ * Defaults to true on iOS, false on Android.
  * @param {boolean=} scroll Whether to allow scrolling of content.  Defaults to true.
  * @param {boolean=} overflow-scroll Whether to use overflow-scrolling instead of
  * Ionic scroll. See {@link ionic.provider:$ionicConfigProvider} to set this as the global default.
@@ -10321,6 +10321,15 @@ IonicModule
               content.$$ionicOptionsOpen = false;
             }
           });
+
+          // Prevents the click event to propagate if the option button is opened
+          $element.on('click', function(event){
+            if (content && content.$$ionicOptionsOpen) {
+              event.preventDefault();
+              content.style[ionic.CSS.TRANSFORM] = '';
+              content.$$ionicOptionsOpen = false;
+            }
+          });
         }
       };
 
@@ -10437,8 +10446,10 @@ IonicModule
 });
 
 var ITEM_TPL_OPTION_BUTTONS =
-  '<div class="item-options invisible">' +
+  '<div class="invisible">' +
   '</div>';
+var ITEM_OPTIONS_LEFT_CLASS = 'item-options-left';
+var ITEM_OPTIONS_RIGHT_CLASS = 'item-options-right';
 /**
 * @ngdoc directive
 * @name ionOptionButton
@@ -10447,9 +10458,12 @@ var ITEM_TPL_OPTION_BUTTONS =
 * @restrict E
 * @description
 * Creates an option button inside a list item, that is visible when the item is swiped
-* to the left by the user.  Swiped open option buttons can be hidden with
+* to the side by the user.  Swiped open option buttons can be hidden with
 * {@link ionic.service:$ionicListDelegate#closeOptionButtons $ionicListDelegate#closeOptionButtons}.
 *
+* By default the option buttons will appear on the right-hand side, but can be shown on
++ the left side by setting the "side" attribute to "left".
++
 * Can be assigned any button class.
 *
 * See {@link ionic.directive:ionList} for a complete example & explanation.
@@ -10460,6 +10474,7 @@ var ITEM_TPL_OPTION_BUTTONS =
 * <ion-list>
 *   <ion-item>
 *     I love kittens!
+*     <ion-option-button class="button-royal" side="left">Meow</ion-option-button>
 *     <ion-option-button class="button-positive">Share</ion-option-button>
 *     <ion-option-button class="button-assertive">Edit</ion-option-button>
 *   </ion-item>
@@ -10475,17 +10490,28 @@ IonicModule.directive('ionOptionButton', [function() {
     require: '^ionItem',
     priority: Number.MAX_VALUE,
     compile: function($element, $attr) {
+      var side = $attr.side == 'left' ? 'left' : 'right';
       $attr.$set('class', ($attr['class'] || '') + ' button', true);
       return function($scope, $element, $attr, itemCtrl) {
-        if (!itemCtrl.optionsContainer) {
-          itemCtrl.optionsContainer = jqLite(ITEM_TPL_OPTION_BUTTONS);
-          itemCtrl.$element.append(itemCtrl.optionsContainer);
+        if (side == 'left') {
+          if (!itemCtrl.optionsContainerLeft) {
+            itemCtrl.optionsContainerLeft = jqLite(ITEM_TPL_OPTION_BUTTONS);
+            itemCtrl.optionsContainerLeft.addClass(ITEM_OPTIONS_LEFT_CLASS);
+            itemCtrl.$element.append(itemCtrl.optionsContainerLeft);
+          }
+          itemCtrl.optionsContainerLeft.append($element);
+          itemCtrl.$element.addClass('item-left-editable');
+        } else {
+          if (!itemCtrl.optionsContainerRight) {
+            itemCtrl.optionsContainerRight = jqLite(ITEM_TPL_OPTION_BUTTONS);
+            itemCtrl.optionsContainerRight.addClass(ITEM_OPTIONS_RIGHT_CLASS);
+            itemCtrl.$element.append(itemCtrl.optionsContainerRight);
+          }
+          itemCtrl.optionsContainerRight.append($element);
+          itemCtrl.$element.addClass('item-right-editable');
         }
-        itemCtrl.optionsContainer.append($element);
 
-        itemCtrl.$element.addClass('item-right-editable');
-
-        //Don't bubble click up to main .item
+        // Don't bubble click up to main .item
         $element.on('click', stopPropagation);
       };
     }
@@ -12534,7 +12560,7 @@ function($timeout, $compile, $ionicSlideBoxDelegate, $ionicHistory, $ionicScroll
       };
 
       this.onPagerClick = function(index) {
-        void 0;
+        console.log('pagerClick', index);
         $scope.pagerClick({index: index});
       };
 
